@@ -5,14 +5,15 @@
 import random
 import string
 from numpy import random as pyr
+import math
 
 # Global Variables
 size_of_first_generation = 5
 max_generation_size = 10
-number_of_generations = 1000
+number_of_generations = 100
 chance_of_mutation_per_candidate = 0.1
 chance_of_crossover = 0.65
-survival_probability_constant = 0.5
+survival_probability_constant = 0.5  # don't mess with this, anything else than 0.5 crashes the program, fix soon
 new_generation = []
 optimum = input()
 
@@ -24,7 +25,7 @@ def main(opt):
     print(get_fitness_list(first_generation))
     set_new_generation(get_next_generation(first_generation))
     print(new_generation)
-    print(get_rating_list(new_generation))
+    print(get_fitness_list(new_generation))
     for x in range(0, number_of_generations):
         set_new_generation(get_next_generation(new_generation))
         print(new_generation)
@@ -48,11 +49,11 @@ def generate_first_generation(opt: str):
 
 
 def get_fitness(candidate: str):
-    fitness = 1
+    fitness = 0
     for x in range(0, len(candidate)):
         if candidate[x] == optimum[x]:
             fitness += 1
-    return fitness
+    return fitness/(len(candidate))
 
 
 def mutate_generation(generation: list):
@@ -85,10 +86,10 @@ def get_rating_list(generation: list):
 
 
 def get_rating(candidate: str):
-    if len(new_generation) == 0:
-        return get_fitness(candidate)
-    else:
-        return get_fitness(candidate) * get_diversity(candidate)
+    inversediversity = (get_diversity(candidate))**2
+    inversefitness = (get_fitness(candidate))**2
+    rating = math.sqrt(inversediversity+inversefitness)/math.sqrt(2)
+    return rating
 
 
 def get_probability_list(generation: list):
@@ -140,7 +141,10 @@ def get_diversity(candidate: str):
     diversity = 0
     for newcandidate in new_generation:
         diversity += different_chars(candidate, newcandidate)
-    return diversity/len(new_generation)
+    if len(new_generation) <= 0:
+        return 0
+    else:
+        return (diversity/len(new_generation))/len(candidate)
 
 
 def different_chars(cd1: str, cd2: str):
